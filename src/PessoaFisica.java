@@ -6,6 +6,10 @@ public class PessoaFisica extends Cliente {
         this.cpf = cpf;
     }
     
+    public String getCpf() {
+        return cpf;
+    }
+
     @Override
     public String toString() {
         return super.toString() + ", CPF: " + this.cpf;

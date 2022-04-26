@@ -9,6 +9,7 @@ public final class Main {
         Scanner scanner = new Scanner(System.in);
         boolean exit = false;
 
+        System.out.println("(Digite 0 Para Ver Opcoes)");
         while(!exit){
             try {
                 System.out.print("User> ");
@@ -40,9 +41,9 @@ public final class Main {
     }
 
     private static void help() {
-        System.out.println("Restaurante ~Sabor Sofisticado~");
-        System.out.println("_______________________________");
-        System.out.println();
+        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        System.out.println(" Restaurante Sabor Sofisticado");
+        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         System.out.println("0. Menu de Opcoes");
         System.out.println("1. Reservar Mesa");
         System.out.println("2. Pesquisar Reserva");
@@ -57,37 +58,44 @@ public final class Main {
         Scanner scanner = new Scanner(System.in);
         Cliente novo_cliente = null;
 
-        System.out.print("Voce deseja adicionar um cliente \"1\" ou empresa \"2\": ");
-        int tipoCliente = scanner.nextInt();
-        scanner.nextLine();
-
+        TipoPessoa tp_c = escolherCliente();
         System.out.print("Nome: ");
         String nome = scanner.nextLine();
-
-        switch (tipoCliente) {
-            case 1:
-                System.out.println("Insira o cpf: ");
+        switch (tp_c) {
+            case FISICA:
+                System.out.print("Insira o cpf: ");
                 String cpf = scanner.nextLine();
-                PessoaFisica pf = new PessoaFisica(nome, cpf);
-                novo_cliente = pf;
+                if (!codigoJaExiste()){
+                    PessoaFisica pf = new PessoaFisica(nome, cpf);
+                    novo_cliente = pf;
+                } else {
+                    System.out.println("Cpf ja Cadastrado!");
+                }
                 break;
-            case 2:
-                System.out.println("Insira o cnpj: ");
+            case JURIDICA:
+                System.out.print("Insira o cnpj: ");
                 String cnpj = scanner.nextLine();
-                PessoaJuridica pj = new PessoaJuridica(nome, cnpj);
-                novo_cliente = pj;
+                if (!codigoJaExiste()) {
+                    PessoaJuridica pj = new PessoaJuridica(nome, cnpj);
+                    novo_cliente = pj;
+                }
+                else {
+                    System.out.println("Cnpj ja Cadastrado!");
+                }
                 break;
         }
 
-        System.out.println("Tipo de Pagamento");
-        System.out.print("\"1\" A Vista / \"2\" Parcelado: ");
-        String tipoPagamento = scanner.nextLine();
-
+        TipoPagamento tp_p = escolherPagamento();
         boolean pagamentoAVista;
-        if (tipoPagamento.trim().equals("1")){
-            pagamentoAVista = true;
-        } else {
-            pagamentoAVista = false;
+        switch (tp_p) {
+            case AVISTA:
+                pagamentoAVista = true;
+                break;
+            case PARCELADO:
+                pagamentoAVista = false;
+                break;
+            default:
+                pagamentoAVista = false;
         }
 
         Reserva nova_reserva = new Reserva(novo_cliente, pagamentoAVista);
@@ -98,11 +106,43 @@ public final class Main {
         }
 
     }
+    
+    private static Reserva pesquisar_reserva(){
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Insira o CPF ou CNPJ: ");
+        String dado = scanner.nextLine();
 
-    private static void pesquisar_reserva(){
+        Reserva reservaEncontrada = null;
+        for (Reserva reserva : reservas) {
+            if (reserva.cliente instanceof PessoaFisica) {
+                PessoaFisica cliente = (PessoaFisica) reserva.cliente;
+                if (cliente.getCpf().equals(dado)){
+                    reservaEncontrada = reserva;
+                }
+            } else {
+                PessoaJuridica cliente = (PessoaJuridica) reserva.cliente;
+                if (cliente.getCnpj().equals(dado)){
+                    reservaEncontrada = reserva;
+                }
+            }
+        }
 
+        if (reservaEncontrada.equals(null)){
+            System.out.println(">> Cliente Não Possui Reserva! <<");
+        } else {
+            System.out.println(">> Cliente Possui Reserva <<");
+        }
+
+        return reservaEncontrada;
     }
     
+    private static boolean codigoJaExiste(){
+        if (pesquisar_reserva().equals(null)) {
+            return false;
+        }
+        return true;
+    }
+
     private static void imprimir_reservas(){
         for (Reserva reserva : reservas) {
             System.out.println(reserva);
@@ -110,10 +150,40 @@ public final class Main {
     }
 
     private static void imprimir_espera(){
-
+        for (Reserva reserva : listaEspera) {
+            System.out.println(reserva);
+        }
     }   
 
     private static void cancelar_reserva(){
+        Reserva reserva = pesquisar_reserva();
+        reservas.remove(reserva);
+        System.out.println(">> Reserva Cancelada <<");
+    }
 
+    private static TipoPessoa escolherCliente(){
+        Scanner scanner = new Scanner(System.in);
+        String tp = "";
+        while (!tp.equals("j") && !tp.equals("f")) {
+            System.out.print("Tipo do Cliente? [F|J] ");
+            tp = scanner.nextLine().toLowerCase();    
+            if (!tp.equals("j") && !tp.equals("f")) {
+                System.err.println("F: Física | J: Jurídica");
+            }
+        }
+        return tp.equals("f") ? TipoPessoa.FISICA : TipoPessoa.JURIDICA;
+    }
+
+    private static TipoPagamento escolherPagamento(){
+        Scanner scanner = new Scanner(System.in);
+        String tp = "";
+        while (!tp.equals("a") && !tp.equals("p")) {
+            System.out.print("Tipo do Pagamento? [A|P] ");
+            tp = scanner.nextLine().toLowerCase();    
+            if (!tp.equals("a") && !tp.equals("p")) {
+                System.err.println("A: A Vista | P: Parcelado");
+            }
+        }
+        return tp.equals("a") ? TipoPagamento.AVISTA : TipoPagamento.PARCELADO;
     }
 }
