@@ -15,10 +15,10 @@ public class Reserva implements Pagamento{
 
         if (this.cliente instanceof PessoaFisica) {
             PessoaFisica pf = (PessoaFisica) this.cliente;
-            tipoCliente += pf.getClass().toString();
+            tipoCliente += pf.getClass().getName();
         } else {
             PessoaJuridica pj = (PessoaJuridica) this.cliente;
-            tipoCliente += pj.getClass().toString();
+            tipoCliente += pj.getClass().getName();
         }
 
         if(this.pagamentoAVista) {
