@@ -24,7 +24,7 @@ public class Reserva implements Pagamento{
         if(this.pagamentoAVista) {
             tipoPagamento += "À Vista";
         } else {
-            tipoPagamento += "Pagamento: Parcelado";
+            tipoPagamento += "Parcelado";
         }
 
         return tipoCliente + ", " + nomeCliente + ", " + tipoPagamento;
