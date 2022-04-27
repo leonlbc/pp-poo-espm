@@ -91,7 +91,6 @@ public class View {
     }
 
     public static TipoPessoa escolherCliente(){
-        Scanner scanner = new Scanner(System.in);
         String tp = "";
         while (!tp.equals("j") && !tp.equals("f")) {
             System.out.print("Tipo do Cliente? [F|J] ");
