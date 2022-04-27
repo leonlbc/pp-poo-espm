@@ -1,37 +1,35 @@
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public final class Main {
     private static ArrayList<Reserva> reservas = new ArrayList<Reserva>();
     private static ArrayList<Reserva> listaEspera = new ArrayList<Reserva>();
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
         boolean exit = false;
+        View.ajudaInicial();
 
-        System.out.println("(Digite 0 Para Ver Opcoes)");
         while(!exit){
             try {
-                System.out.print("User> ");
-                String input = scanner.nextLine().trim().toLowerCase();
+                View.userPointer();
+                String input = View.getStrInput();
         
                 if ("".equals(input)) {
                 } else if ("0".equals(input)) {
-                    help();
+                    View.help();
                 } else if ("1".equals(input)) {
                     reservar_mesa();
                 } else if ("2".equals(input)) {
-                    pesquisar_reserva();
+                    possui_reserva(View.informar_codigo(View.escolherCliente()));
                 } else if ("3".equals(input)) {
-                    imprimir_reservas();
+                    View.imprimir_lista(reservas);
                 } else if ("4".equals(input)) {
-                    imprimir_espera();
+                    View.imprimir_lista(listaEspera);
                 } else if ("5".equals(input)) {
                     cancelar_reserva();
                 } else if ("6".equals(input)) {
                     exit = true;
                 }else {
-                    System.err.println("Opcao Invalida. Digite \"0\" para ajuda");
+                    View.opInvalida();
                     throw new UnsupportedOperationException();
                 }
             } catch (UnsupportedOperationException e) {
@@ -40,52 +38,34 @@ public final class Main {
         }
     }
 
-    private static void help() {
-        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        System.out.println(" Restaurante Sabor Sofisticado");
-        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        System.out.println("0. Menu de Opcoes");
-        System.out.println("1. Reservar Mesa");
-        System.out.println("2. Pesquisar Reserva");
-        System.out.println("3. Imprimir Reservas");
-        System.out.println("4. Imprimir Lista de Espera");
-        System.out.println("5. Cancelar Reserva");
-        System.out.println();
-        System.out.println("6. Finalizar");
-    }
-
     private static void reservar_mesa(){
-        Scanner scanner = new Scanner(System.in);
         Cliente novo_cliente = null;
+        TipoPessoa tp_c = View.escolherCliente();
+        String nome = View.inserirNome();
 
-        TipoPessoa tp_c = escolherCliente();
-        System.out.print("Nome: ");
-        String nome = scanner.nextLine();
         switch (tp_c) {
             case FISICA:
-                System.out.print("Insira o cpf: ");
-                String cpf = scanner.nextLine();
-                if (!codigoJaExiste()){
+                String cpf = View.informar_codigo(TipoPessoa.FISICA);
+                if (!codigoJaExiste(cpf)){
                     PessoaFisica pf = new PessoaFisica(nome, cpf);
                     novo_cliente = pf;
                 } else {
-                    System.out.println("Cpf ja Cadastrado!");
+                    View.jaCadastrado(tp_c);
                 }
                 break;
             case JURIDICA:
-                System.out.print("Insira o cnpj: ");
-                String cnpj = scanner.nextLine();
-                if (!codigoJaExiste()) {
+                String cnpj = View.informar_codigo(TipoPessoa.JURIDICA);
+                if (!codigoJaExiste(cnpj)) {
                     PessoaJuridica pj = new PessoaJuridica(nome, cnpj);
                     novo_cliente = pj;
                 }
                 else {
-                    System.out.println("Cnpj ja Cadastrado!");
+                    View.jaCadastrado(tp_c);
                 }
                 break;
         }
 
-        TipoPagamento tp_p = escolherPagamento();
+        TipoPagamento tp_p = View.escolherPagamento();
         boolean pagamentoAVista;
         switch (tp_p) {
             case AVISTA:
@@ -104,88 +84,47 @@ public final class Main {
         } else {
             listaEspera.add(nova_reserva);
         }
-
     }
-    
-    private static Reserva pesquisar_reserva(){
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Insira o CPF ou CNPJ: ");
-        String dado = scanner.nextLine();
+
+    private static Reserva pesquisar_reserva(String codigo){
 
         Reserva reservaEncontrada = null;
         for (Reserva reserva : reservas) {
             if (reserva.cliente instanceof PessoaFisica) {
                 PessoaFisica cliente = (PessoaFisica) reserva.cliente;
-                if (cliente.getCpf().equals(dado)){
+                if (cliente.getCpf().equals(codigo)){
                     reservaEncontrada = reserva;
                 }
             } else {
                 PessoaJuridica cliente = (PessoaJuridica) reserva.cliente;
-                if (cliente.getCnpj().equals(dado)){
+                if (cliente.getCnpj().equals(codigo)){
                     reservaEncontrada = reserva;
                 }
             }
         }
-
-        if (reservaEncontrada.equals(null)){
-            System.out.println(">> Cliente Não Possui Reserva! <<");
-        } else {
-            System.out.println(">> Cliente Possui Reserva <<");
-        }
-
         return reservaEncontrada;
     }
     
-    private static boolean codigoJaExiste(){
-        if (pesquisar_reserva().equals(null)) {
+    private static boolean codigoJaExiste(String codigo){
+        if (pesquisar_reserva(codigo) == null) {
             return false;
         }
         return true;
     }
 
-    private static void imprimir_reservas(){
-        for (Reserva reserva : reservas) {
-            System.out.println(reserva);
-        }
+    private static void possui_reserva(String codigo){
+        Reserva reservaEncontrada = pesquisar_reserva(codigo);
+        View.possuiReserva(reservaEncontrada);
     }
-
-    private static void imprimir_espera(){
-        for (Reserva reserva : listaEspera) {
-            System.out.println(reserva);
-        }
-    }   
 
     private static void cancelar_reserva(){
-        Reserva reserva = pesquisar_reserva();
+        String codigo = View.informar_codigo(View.escolherCliente());
+
+        Reserva reserva = pesquisar_reserva(codigo);
         if (!reserva.equals(null)){
             reservas.remove(reserva);
-            System.out.println(">> Reserva Cancelada <<");
+            View.reservaCancelada();
         }
     }
 
-    private static TipoPessoa escolherCliente(){
-        Scanner scanner = new Scanner(System.in);
-        String tp = "";
-        while (!tp.equals("j") && !tp.equals("f")) {
-            System.out.print("Tipo do Cliente? [F|J] ");
-            tp = scanner.nextLine().toLowerCase();    
-            if (!tp.equals("j") && !tp.equals("f")) {
-                System.err.println("F: Física | J: Jurídica");
-            }
-        }
-        return tp.equals("f") ? TipoPessoa.FISICA : TipoPessoa.JURIDICA;
-    }
-
-    private static TipoPagamento escolherPagamento(){
-        Scanner scanner = new Scanner(System.in);
-        String tp = "";
-        while (!tp.equals("a") && !tp.equals("p")) {
-            System.out.print("Tipo do Pagamento? [A|P] ");
-            tp = scanner.nextLine().toLowerCase();    
-            if (!tp.equals("a") && !tp.equals("p")) {
-                System.err.println("A: A Vista | P: Parcelado");
-            }
-        }
-        return tp.equals("a") ? TipoPagamento.AVISTA : TipoPagamento.PARCELADO;
-    }
 }
