@@ -157,8 +157,10 @@ public final class Main {
 
     private static void cancelar_reserva(){
         Reserva reserva = pesquisar_reserva();
-        reservas.remove(reserva);
-        System.out.println(">> Reserva Cancelada <<");
+        if (!reserva.equals(null)){
+            reservas.remove(reserva);
+            System.out.println(">> Reserva Cancelada <<");
+        }
     }
 
     private static TipoPessoa escolherCliente(){
